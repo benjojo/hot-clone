@@ -95,6 +95,7 @@ struct termios2 {
 #include <linux/fanotify.h>
 #include <linux/filter.h>
 #include <linux/fs.h>
+#include <linux/blktrace_api.h>
 #include <linux/fsverity.h>
 #include <linux/genetlink.h>
 #include <linux/hdreg.h>
@@ -3210,6 +3211,17 @@ const (
 	PPS_SETPARAMS = C.PPS_SETPARAMS
 	PPS_GETCAP    = C.PPS_GETCAP
 	PPS_FETCH     = C.PPS_FETCH
+)
+
+// BLKTRACE API
+
+type BLK_user_trace_setup C.struct_blk_user_trace_setup
+
+const (
+	BLKTRACESETUP    = C.BLKTRACESETUP
+	BLKTRACESTART    = C.BLKTRACESTART
+	BLKTRACESTOP     = C.BLKTRACESTOP
+	BLKTRACETEARDOWN = C.BLKTRACETEARDOWN
 )
 
 // lwtunnel and related APIs

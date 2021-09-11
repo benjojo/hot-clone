@@ -643,6 +643,25 @@ const (
 	PPS_FETCH     = 0xc00470a4
 )
 
+type BLK_user_trace_setup struct {
+	Name      [32]uint8
+	Act_mask  uint16
+	Buf_size  uint32
+	Buf_nr    uint32
+	_         [4]byte
+	Start_lba uint64
+	End_lba   uint64
+	Pid       uint32
+	_         [4]byte
+}
+
+const (
+	BLKTRACESETUP    = 0xc0481273
+	BLKTRACESTART    = 0x20001274
+	BLKTRACESTOP     = 0x20001275
+	BLKTRACETEARDOWN = 0x20001276
+)
+
 const (
 	PIDFD_NONBLOCK = 0x800
 )

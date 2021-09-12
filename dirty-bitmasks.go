@@ -10,7 +10,9 @@ type DirtySectorTracker struct {
 	TotalSizeOfDevice uint64
 	Sectors           uint64
 	dirtyTracker      []uint64
-	lock              *sync.Mutex
+	// DirtySectors: CountDirty() must be called for this number to be updated
+	DirtySectors int
+	lock         *sync.Mutex
 }
 
 func (d *DirtySectorTracker) Setup(diskSize uint64) {
@@ -28,7 +30,7 @@ func (d *DirtySectorTracker) SetDirty(sector uint) {
 	d.dirtyTracker[arrayTarget] = block
 }
 
-func (d *DirtySectorTracker) CountDirty() int {
+func (d *DirtySectorTracker) CountDirty() {
 	dirty := 0
 	for i := 0; i < len(d.dirtyTracker); i++ {
 		if d.dirtyTracker[i] != 0 {
@@ -36,7 +38,7 @@ func (d *DirtySectorTracker) CountDirty() int {
 		}
 	}
 
-	return dirty
+	d.DirtySectors = dirty
 }
 
 // GetDirtyPages Gives a full list of sectors (in order) that have been marked as dirty

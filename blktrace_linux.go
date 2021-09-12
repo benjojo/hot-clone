@@ -45,8 +45,7 @@ func setupBlkTrace(err error, f *os.File, eventConsumer chan unix.BLK_io_trace, 
 	_, _, err = unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACESETUP, uintptr(unsafe.Pointer(&traceOpts)))
 	if err != nil {
 		if err.Error() != "errno 0" {
-			unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACESTOP, 0)
-			unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACETEARDOWN, 0)
+			shutdownBlkTrace(f)
 			log.Fatalf("failed to BLKTRACESETUP -> %s", err)
 		}
 	}
@@ -64,8 +63,7 @@ func setupBlkTrace(err error, f *os.File, eventConsumer chan unix.BLK_io_trace, 
 		select {
 		case sig := <-c:
 			fmt.Printf("Got %s signal. Aborting...\n", sig)
-			unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACESTOP, 0)
-			unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACETEARDOWN, 0)
+			shutdownBlkTrace(f)
 			os.Exit(1)
 		}
 	}()
@@ -73,6 +71,11 @@ func setupBlkTrace(err error, f *os.File, eventConsumer chan unix.BLK_io_trace, 
 	for i := 0; i < runtime.NumCPU(); i++ {
 		go readBlkTraceEventFiles(i, eventConsumer, deviceBaseName)
 	}
+}
+
+func shutdownBlkTrace(f *os.File) {
+	unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACESTOP, 0)
+	unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACETEARDOWN, 0)
 }
 
 func readBlkTraceEventFiles(cpu int, out chan unix.BLK_io_trace, deviceBaseName string) {

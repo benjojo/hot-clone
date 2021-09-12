@@ -3254,6 +3254,20 @@ type PPSKTime struct {
 	Flags uint32
 }
 
+type BLK_io_trace struct {
+	Magic    uint32
+	Sequence uint32
+	Time     uint64
+	Sector   uint64
+	Bytes    uint32
+	Action   uint32
+	Pid      uint32
+	Device   uint32
+	Cpu      uint32
+	Error    uint16
+	Len      uint16
+}
+
 const (
 	LWTUNNEL_ENCAP_NONE       = 0x0
 	LWTUNNEL_ENCAP_MPLS       = 0x1

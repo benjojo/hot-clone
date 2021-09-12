@@ -3216,6 +3216,7 @@ const (
 // BLKTRACE API
 
 type BLK_user_trace_setup C.struct_blk_user_trace_setup
+type BLK_io_trace C.struct_blk_io_trace
 
 const (
 	BLKTRACESETUP    = C.BLKTRACESETUP

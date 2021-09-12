@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
@@ -74,8 +75,9 @@ func readFiles(cpu int) {
 	}
 
 	for {
-		data := make([]byte, 1024)
-		n, err := f.Read(data)
+		BlkEvent := unix.BLK_io_trace{}
+		err := binary.Read(f, binary.LittleEndian, &BlkEvent)
+
 		if err != nil {
 			if err == io.EOF {
 				time.Sleep(time.Millisecond * 10)
@@ -84,7 +86,20 @@ func readFiles(cpu int) {
 			log.Printf("readFiles loop err %v", err)
 			return
 		}
-		log.Printf("CPU %d read %d", cpu, n)
+
+		data := make([]byte, BlkEvent.Len)
+		n, err := f.Read(data)
+		log.Printf("CPU %d skipped %d", cpu, n)
+		if err != nil {
+			if err == io.EOF {
+				time.Sleep(time.Millisecond * 10)
+				continue
+			}
+			log.Printf("readFiles loop err %v", err)
+			return
+		}
+
+		log.Printf("%#v", BlkEvent)
 	}
 
 }

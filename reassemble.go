@@ -34,7 +34,7 @@ func reassembleMain() {
 	var outputFD *os.File
 	if outputStat != nil {
 		if outputStat.Mode().Type() == os.ModeDevice {
-			outputFD, err = os.Open(*reassembleOutput)
+			outputFD, err = os.OpenFile(*reassembleOutput, os.O_RDWR, 0777)
 		} else {
 			outputFD, err = os.Create(*reassembleOutput)
 		}

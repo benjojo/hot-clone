@@ -35,6 +35,22 @@ func getTotalDeviceSectorsSize(deviceBaseName string) uint64 {
 	return i
 }
 
+func getBlkTraceDrops(deviceBaseName string) uint64 {
+	b, err := ioutil.ReadFile(fmt.Sprintf("/sys/kernel/debug/block/%s/dropped", deviceBaseName))
+	if err != nil {
+		log.Printf("Cannot read device drops %v", err)
+		return 0
+	}
+
+	i, err := strconv.ParseUint(strings.Trim(string(b), "\r\n\t "), 10, 64)
+	if err != nil {
+		log.Fatalf("Cannot parse device drops %v", err)
+		return 0
+	}
+
+	return i
+}
+
 func setupBlkTrace(err error, f *os.File, eventConsumer chan unix.BLK_io_trace, deviceBaseName string) {
 	traceOpts := unix.BLK_user_trace_setup{
 		Act_mask: 2,

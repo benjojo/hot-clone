@@ -1,2 +1,7 @@
 hot-clone
 blktrace-1.2.0
+*.img
+*.hb
+*.log
+utils/sector-pinger/sector-pinger
+utils/sector-sprinkler/sector-sprinkler

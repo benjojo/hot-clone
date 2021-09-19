@@ -24,6 +24,30 @@ func reassembleMain() {
 		log.Fatalf("You must provide a -reassemble-output to restore to")
 	}
 
+	// First we should 100% check that we are dealing with a hot-clone image file
+	ReadBanner := ""
+	for {
+		b := make([]byte, 1)
+		n, err := imageFd.Read(b)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatalf("Failed to read image banner %v", err)
+		}
+		if n == 1 {
+			ReadBanner += string(b)
+		}
+
+		if b[0] == '\n' {
+			break
+		}
+	}
+
+	if !strings.Contains(ReadBanner, "Hot-Clone") {
+		log.Fatalf("This image does not seem to be the output of hot-clone")
+	}
+
 	outputStat, err := os.Stat(*reassembleOutput)
 	if err != nil {
 		if !os.IsNotExist(err) {
@@ -46,6 +70,7 @@ func reassembleMain() {
 		log.Fatalf("Can't open/create output %v", err)
 	}
 
+	n := 0
 	for {
 		ReadHeader := ""
 		ReadEOF := false
@@ -83,7 +108,14 @@ func reassembleMain() {
 		if err != nil {
 			log.Fatalf("Seek failure (to %d) on output file/device %v", SectorStart, err)
 		}
-		log.Printf("Restoring section (Sector: %v (len %d bytes) (debug: '%s')", SectorStart, BytesLeftToRead, strings.Trim(ReadHeader, "\n"))
+		if n == 0 || n%1000 == 0 {
+			if *debug {
+				log.Printf("Restoring section (Sector: %v (len %d bytes) (debug: '%s')", SectorStart, BytesLeftToRead, strings.Trim(ReadHeader, "\n"))
+			} else {
+				log.Printf("Restoring section (Sector: %v (len %d bytes)", SectorStart, BytesLeftToRead)
+			}
+		}
+		n++
 
 		var buf []byte
 		for {

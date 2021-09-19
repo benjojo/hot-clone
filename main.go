@@ -15,6 +15,7 @@ import (
 )
 
 var DST DirtySectorTracker
+var debug = flag.Bool("verbose", false, "be extra verbose on whats happening")
 
 func main() {
 	dev := flag.String("device", "", "The device you wise to hot-clone")
@@ -28,8 +29,6 @@ func main() {
 
 	info := syscall.Sysinfo_t{}
 	syscall.Sysinfo(&info)
-	// AppStartTime := time.Now()
-	// SystemStartTime := time.Now().Add((time.Second * time.Duration(info.Uptime)) * -1)
 	deviceBaseName := filepath.Base(*dev)
 	eventConsumer := make(chan unix.BLK_io_trace, 100)
 
@@ -50,7 +49,11 @@ func main() {
 			time.Sleep(time.Second)
 			DST.CountDirty()
 			TotalRead := atomic.LoadInt64(&bytesRead)
-			log.Printf("Read %s (%v bytes) -- Dirty %v sectors (drops %d)", ByteCountIEC(TotalRead), TotalRead, DST.DirtySectors, getBlkTraceDrops(deviceBaseName))
+			eventDrops := getBlkTraceDrops(deviceBaseName)
+			log.Printf("Read %s -- %v Dirty sectors (%d event drops)", ByteCountIEC(TotalRead), DST.DirtySectors, eventDrops)
+			if eventDrops != 0 {
+				log.Fatalf("Event drops detected, cannot safely image device anymore")
+			}
 		}
 	}()
 
@@ -62,6 +65,7 @@ func main() {
 		log.Fatalf("cannot open block device %v - %v", *dev, err)
 	}
 
+	os.Stdout.WriteString("This-Is-A-Hot-Clone-Image See: https://github.com/benjojo/hot-clone\n")
 	os.Stdout.WriteString(fmt.Sprintf("S:0\tL:%d\n", diskSectorsCount*512))
 	TotalRead := int64(0) // for use below only!!!
 	for {
@@ -93,7 +97,7 @@ func main() {
 		os.Stdout.WriteString(fmt.Sprintf("S:%d\tL:%d\n", sector, 512))
 		os.Stdout.Write(data)
 		n++
-		if n%25 == 0 {
+		if n%(DST.DirtySectors/10) == 0 {
 			log.Printf("Catching up %d/%d sectors", n, DST.DirtySectors)
 		}
 	}

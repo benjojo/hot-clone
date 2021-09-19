@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/binary"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -51,11 +52,16 @@ func getBlkTraceDrops(deviceBaseName string) uint64 {
 	return i
 }
 
+var (
+	BlkTraceBufSize  = flag.Int("blktrace.bufsize", 65536, "The size of each buffer for blktrace")
+	BlkTraceBufCount = flag.Int("blktrace.bufcount", 16, "The amount of buffers for blktrace to keep spare")
+)
+
 func setupBlkTrace(err error, f *os.File, eventConsumer chan unix.BLK_io_trace, deviceBaseName string) {
 	traceOpts := unix.BLK_user_trace_setup{
 		Act_mask: 2,
-		Buf_size: 65536,
-		Buf_nr:   4,
+		Buf_size: uint32(*BlkTraceBufSize),
+		Buf_nr:   uint32(*BlkTraceBufCount),
 	}
 
 	_, _, err = unix.Syscall(unix.SYS_IOCTL, f.Fd(), unix.BLKTRACESETUP, uintptr(unsafe.Pointer(&traceOpts)))

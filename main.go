@@ -68,8 +68,42 @@ func main() {
 	os.Stdout.WriteString("This-Is-A-Hot-Clone-Image See: https://github.com/benjojo/hot-clone\n")
 	os.Stdout.WriteString(fmt.Sprintf("S:0\tL:%d\n", diskSectorsCount*512))
 	TotalRead := int64(0) // for use below only!!!
+	BytesLeftToRead := int(diskSectorsCount * 512)
+	var buf []byte
 	for {
-		data := make([]byte, 1024*1024)
+		expectedRead := 1024 * 1024
+		if BytesLeftToRead < 1024*1024 {
+			expectedRead = BytesLeftToRead
+		}
+
+		if BytesLeftToRead == 0 {
+			break
+		}
+
+		buf = make([]byte, expectedRead)
+
+		n, err := BlockF.Read(buf)
+		if err != nil {
+			log.Fatalf("Disk read failure -- %v", err)
+		}
+		if n != expectedRead {
+			log.Fatalf("Disk short read failure -- %v != %v (had %d bytes left)", n, expectedRead, BytesLeftToRead)
+		}
+		TotalRead += int64(n)
+		atomic.StoreInt64(&bytesRead, TotalRead)
+		BytesLeftToRead = BytesLeftToRead - expectedRead
+
+		_, err = os.Stdout.Write(buf)
+		if err != nil {
+			log.Fatalf("Output file/device write failure -- %v", err)
+		}
+	}
+
+	alreadyWarnedAboutOverread := false
+	tmpSectors := diskSectorsCount
+	// Attempt to over-read, in case the block device is actualy bigger
+	for {
+		data := make([]byte, 512)
 		n, err := BlockF.Read(data)
 		TotalRead += int64(n)
 		atomic.StoreInt64(&bytesRead, TotalRead)
@@ -77,10 +111,26 @@ func main() {
 			// we are done! time to image the other bits
 			break
 		} else if err != nil {
-			log.Fatalf("Failed to read drive :/ -- %v", err)
 			break
 		}
-		os.Stdout.Write(data)
+
+		if (uint64(bytesRead) > diskSectorsCount*512) && !alreadyWarnedAboutOverread {
+			// Okay very interseting, the block layer let us read more data then there were sectors!
+			alreadyWarnedAboutOverread = true
+			log.Printf("Strange device! Let's us read more data than there are sectors!!!")
+		}
+		tmpSectors++
+		os.Stdout.WriteString(fmt.Sprintf("S:%d\tL:%d\n", tmpSectors, n))
+		os.Stdout.Write(data[:n])
+		if n != 512 {
+			// we are now out of alignment, time to leave
+			log.Printf("*And* the strange device gave us a shorter than sector read()?!")
+			break
+		}
+	}
+
+	if alreadyWarnedAboutOverread {
+		log.Printf("Device overread by %d sectors", tmpSectors-diskSectorsCount)
 	}
 
 	shutdownBlkTrace(f)

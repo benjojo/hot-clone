@@ -15,9 +15,15 @@ var (
 )
 
 func reassembleMain() {
-	imageFd, err := os.Open(*reassemblePath)
-	if err != nil {
-		log.Fatalf("Can't open image file -reassemble %v -- %v", *reassembleOutput, err)
+	var imageFd *os.File
+	var err error
+	if *reassemblePath == "-" {
+		imageFd = os.Stdin
+	} else {
+		imageFd, err = os.Open(*reassemblePath)
+		if err != nil {
+			log.Fatalf("Can't open image file -reassemble %v -- %v", *reassembleOutput, err)
+		}
 	}
 
 	if *reassembleOutput == "" {

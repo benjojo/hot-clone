@@ -107,7 +107,7 @@ func reassembleMain() {
 		BytesLeftToRead := 0
 		parsed, err := fmt.Sscanf(ReadHeader, "S:%d\tL:%d\n", &SectorStart, &BytesLeftToRead)
 		if parsed != 2 {
-			log.Fatalf("Failed to parse header (%v) -- aborting (%v - %v - %v)", ReadHeader, err, SectorStart, BytesLeftToRead)
+			log.Fatalf("Failed to parse header (%v) -- aborting (%v (%x) - %v - %v)", ReadHeader, ReadHeader, err, SectorStart, BytesLeftToRead)
 		}
 
 		_, err = outputFD.Seek(int64(SectorStart*512), 0)
@@ -141,7 +141,7 @@ func reassembleMain() {
 				log.Fatalf("Image read failure -- %v", err)
 			}
 			if n != expectedRead {
-				log.Fatalf("Image short read failure -- %v != %v (had %d bytes left)", n, expectedRead, BytesLeftToRead)
+				log.Printf("Image short read -- %v != %v (have %d bytes left)", n, expectedRead, BytesLeftToRead)
 			}
 			BytesLeftToRead = BytesLeftToRead - expectedRead
 

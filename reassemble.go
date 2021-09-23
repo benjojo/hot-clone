@@ -143,9 +143,9 @@ func reassembleMain() {
 			if n != expectedRead {
 				log.Printf("Image short read -- %v != %v (have %d bytes left)", n, expectedRead, BytesLeftToRead)
 			}
-			BytesLeftToRead = BytesLeftToRead - expectedRead
+			BytesLeftToRead = BytesLeftToRead - n
 
-			_, err = outputFD.Write(buf)
+			_, err = outputFD.Write(buf[:n])
 			if err != nil {
 				log.Fatalf("Output file/device write failure -- %v", err)
 			}

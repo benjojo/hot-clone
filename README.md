@@ -1,7 +1,7 @@
 hot-clone
 ===
 
-This tool allows you to image a actively changing block device. Including the one the rootfs is stored on.
+This tool allows you to image an actively changing block device. Including the one the rootfs is stored on.
 
 ## Backup a device
 
@@ -35,7 +35,7 @@ $ sudo ./hot-clone -device /dev/sdb > sdb.hc
 2021/09/19 22:39:49 Done
 ```
 
-The output it pipeed to stdout, this is so you can output to a file or a pipe (or directly invoke it from ssh)
+The output it piped to stdout, this is so you can output to a file or a pipe (or directly invoke it from ssh)
 
 ## Restore a device
 

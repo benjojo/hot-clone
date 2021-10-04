@@ -101,7 +101,7 @@ func main() {
 
 	alreadyWarnedAboutOverread := false
 	tmpSectors := diskSectorsCount
-	// Attempt to over-read, in case the block device is actualy bigger
+	// Attempt to over-read, in case the block device is actually bigger
 	for {
 		data := make([]byte, 512)
 		n, err := BlockF.Read(data)
@@ -115,9 +115,9 @@ func main() {
 		}
 
 		if (uint64(bytesRead) > diskSectorsCount*512) && !alreadyWarnedAboutOverread {
-			// Okay very interseting, the block layer let us read more data then there were sectors!
+			// Okay very interesting, the block layer let us read more data then there were sectors!
 			alreadyWarnedAboutOverread = true
-			log.Printf("Strange device! Let's us read more data than there are sectors!!!")
+			log.Printf("Strange device! Lets us read more data than there are sectors!!!")
 		}
 		tmpSectors++
 		os.Stdout.WriteString(fmt.Sprintf("S:%d\tL:%d\n", tmpSectors, n))

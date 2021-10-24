@@ -86,7 +86,7 @@ $ ./hot-clone --help
 ```
 ## Distributions
 
-Brief testing indicates that this works on Debian 8, 9 and 11 and Ubuntu 18.10. 
+Brief testing indicates that this works on Debian 8, 9, 10 and 11 and Ubuntu 18.10. 
 
 Debian 7 does not have the TRACE interface so hot-clone won't work.
 

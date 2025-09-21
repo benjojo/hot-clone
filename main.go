@@ -18,7 +18,7 @@ var DST DirtySectorTracker
 var debug = flag.Bool("verbose", false, "be extra verbose on whats happening")
 
 func main() {
-	dev := flag.String("device", "", "The device you wise to hot-clone")
+	dev := flag.String("device", "", "The device you wish to hot-clone")
 	flag.Parse()
 
 	// Nope, we are restoring instead
@@ -115,7 +115,7 @@ func main() {
 		}
 
 		if (uint64(bytesRead) > diskSectorsCount*512) && !alreadyWarnedAboutOverread {
-			// Okay very interesting, the block layer let us read more data then there were sectors!
+			// Okay very interesting, the block layer let us read more data than there were sectors!
 			alreadyWarnedAboutOverread = true
 			log.Printf("Strange device! Lets us read more data than there are sectors!!!")
 		}
